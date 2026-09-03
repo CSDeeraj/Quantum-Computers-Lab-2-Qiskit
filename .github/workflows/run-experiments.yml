@@ -1,0 +1,46 @@
+name: Run All Qubit Experiments
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-experiments:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get repository files
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Qiskit and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install nbconvert ipykernel
+
+      - name: Execute all notebooks
+        run: |
+          mkdir -p executed_notebooks
+
+          for notebook in experiment_*.ipynb; do
+            echo "======================================"
+            echo "Running $notebook"
+            echo "======================================"
+
+            jupyter nbconvert \
+              --to notebook \
+              --execute "$notebook" \
+              --output-dir executed_notebooks \
+              --ExecutePreprocessor.timeout=300
+          done
+
+      - name: Save executed notebooks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: executed-qubit-experiments
+          path: executed_notebooks/
