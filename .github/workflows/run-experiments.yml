@@ -26,19 +26,25 @@ jobs:
         run: |
           mkdir -p executed_notebooks
 
-          for notebook in "Experiments 1 to 10"/experiment_*.ipynb; do
+          for n in {1..10}; do
+            notebook=$(find "Experiments 1 to 10" -maxdepth 1 -name "experiment_${n}_*.ipynb" -print -quit)
+
             echo "======================================"
-            echo "Running $notebook"
+            echo "Running experiment $n"
+            echo "$notebook"
             echo "======================================"
 
             jupyter nbconvert \
               --to notebook \
               --execute "$notebook" \
+              --output "$(basename "$notebook")" \
               --output-dir executed_notebooks \
               --ExecutePreprocessor.timeout=300
+
+            echo "Experiment $n completed."
           done
 
-      - name: Save executed notebooks
+      - name: Upload executed notebooks
         if: always()
         uses: actions/upload-artifact@v4
         with:
