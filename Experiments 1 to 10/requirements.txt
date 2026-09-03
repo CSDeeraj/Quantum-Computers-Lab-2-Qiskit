@@ -2,3 +2,4 @@ qiskit
 matplotlib
 numpy
 jupyter
+pylatexenc
